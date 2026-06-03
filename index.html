@@ -155,8 +155,12 @@
                 <div class="preview-title">
                     <i data-lucide="eye"></i> Aperçu en temps réel
                 </div>
-                <div class="zoom-controls">
-                    <span>Format A4 standard (DGR/KC)</span>
+                <div class="preview-header-actions">
+                    <span class="zoom-controls">Format A4 standard (DGR/KC)</span>
+                    <button type="button" class="btn btn-success btn-sm" id="btn-pdf-top"
+                        onclick="document.getElementById('btn-generate-pdf').click()">
+                        <i data-lucide="download"></i> Télécharger PDF
+                    </button>
                 </div>
             </div>
 
@@ -169,9 +173,9 @@
                             <div class="country-title">République Démocratique du Congo</div>
                             <div class="province-title">PROVINCE DU KONGO CENTRAL</div>
                             <div class="ministry-title">MINISTERE PROVINCIAL DES FINANCES</div>
-                            <!-- RDC Flag SVG -->
+                            <!-- RDC Flag SVG - cascade centré -->
                             <div class="flag-container">
-                                <svg viewBox="0 0 800 600" width="60" height="45" class="svg-flag">
+                                <svg viewBox="0 0 800 600" width="55" height="42" class="svg-flag">
                                     <rect width="800" height="600" fill="#007FFF" />
                                     <polygon points="0,600 800,0 800,80 100,600" fill="#FFC400" />
                                     <polygon points="0,600 800,0 800,100 133,600" fill="#FFC400" opacity="0.3" />
@@ -181,8 +185,8 @@
                                         points="120,80 145,155 224,155 160,202 184,277 120,230 56,277 80,202 16,155 95,155"
                                         fill="#FFC400" />
                                 </svg>
-                                <span class="dgrkc-brand-text">DIRECTION GENERALE DES RECETTES DU KONGO CENTRAL</span>
                             </div>
+                            <div class="dgrkc-brand-text">DIRECTION GENERALE DES RECETTES DU KONGO CENTRAL</div>
                             <div class="dgrkc-acronym">DGR/KC</div>
                         </div>
 

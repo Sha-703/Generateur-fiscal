@@ -1,0 +1,19 @@
+{
+  "name": "dgrkc-app",
+  "version": "1.0.0",
+  "description": "DGR/KC - Générateur de Note de Perception",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest",
+    "electron-is-dev": "latest"
+  }
+}
