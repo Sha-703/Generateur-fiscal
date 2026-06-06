@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - DGRKC</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+        --bg: #060d1f;
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.35);
+        --dgrkc-blue: #0D5C75;
+        --dgrkc-gold: #FFC400;
+        --text-main: #f8fafc;
+        --text-muted: #64748b;
+        --border: rgba(255,255,255,0.08);
+        --glass: rgba(15, 23, 42, 0.75);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* ARRIERE-PLAN ANIME */
+    .bg-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .bg-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.35;
+        animation: orbFloat 12s ease-in-out infinite alternate;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, #0D5C75, transparent); top: -200px; left: -150px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, #3b82f6, transparent); bottom: -100px; right: -100px; animation-delay: 3s; }
+
+    @keyframes orbFloat {
+        from { transform: translate(0, 0) scale(1); }
+        to { transform: translate(30px, -40px) scale(1.08); }
+    }
+
+    /* HEADER OFFICIEL */
+    .login-header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 2.5rem;
+        border-bottom: 1px solid var(--border);
+        background: rgba(6, 13, 31, 0.6);
+        backdrop-filter: blur(20px);
+    }
+
+    .lh-brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .lh-texts { display: flex; flex-direction: column; }
+    .lh-title { font-size: 1.2rem; font-weight: 800; color: #fff; }
+    .lh-subtitle { font-size: 0.8rem; color: #94a3b8; }
+    .lh-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* CONTENU CENTRAL */
+    .login-content {
+        position: relative;
+        z-index: 10;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .login-card {
+        background: var(--glass);
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 24px;
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 460px;
+        max-height: 90vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .login-card::-webkit-scrollbar { display: none; }
+
+    .card-logo {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .marmite-icon { width: 52px; height: 52px; flex-shrink: 0; }
+    .card-logo-texts h1 { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 900; color: #fff; line-height: 1; }
+    .card-logo-texts h1 span { color: var(--dgrkc-gold); }
+    .card-logo-texts p { font-size: 0.72rem; color: #64748b; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .card-subtitle { text-align: center; margin-bottom: 1.75rem; }
+    .card-subtitle h2 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .card-subtitle p { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
+
+    /* FORMULAIRE */
+    .login-form { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .field-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .field-label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .field-input-wrap { position: relative; display: flex; align-items: center; }
+    .field-icon { position: absolute; left: 0.9rem; color: #475569; width: 18px; height: 18px; pointer-events: none; }
+
+    .field-input {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem 0.75rem 2.75rem;
+        color: #fff;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        width: 100%;
+        transition: all 0.25s ease;
+    }
+
+    .field-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+        background: #0f172a;
+    }
+
+    .field-input::placeholder { color: #334155; }
+
+    /* BOUTON */
+    .btn-login {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        color: #fff;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        margin-top: 0.25rem;
+    }
+
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5); }
+    .btn-login:active { transform: translateY(0); }
+
+    /* MESSAGE D'ERREUR */
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+        font-size: 0.8rem;
+        color: #f87171;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .error-message.visible { display: flex; }
+    .error-message i { width: 16px; height: 16px; }
+
+    /* FOOTER */
+    .login-footer {
+        position: relative;
+        z-index: 10;
+        padding: 1rem 2.5rem;
+        border-top: 1px solid var(--border);
+        background: rgba(6, 13, 31, 0.5);
+        backdrop-filter: blur(20px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        color: #334155;
+    }
+  </style>
+</head>
+<body>
+  <!-- Arrière-plan animé -->
+  <div class="bg-canvas">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="login-header">
+    <div class="lh-brand">
+      <div class="lh-texts">
+        <div class="lh-title">Admin Panel DGRKC</div>
+        <div class="lh-subtitle">Gestion Administrative</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenu principal -->
+  <main class="login-content">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="card-logo">
+        <svg class="marmite-icon" viewBox="0 0 200 150">
+          <rect width="200" height="150" fill="#0f172a" rx="10"/>
+          <path d="M 40,75 L 160,75 L 150,115 Q 140,135 100,135 Q 60,135 50,115 Z" fill="#0D5C75"/>
+          <path d="M 45,75 Q 100,50 155,75 Z" fill="#0D5C75"/>
+          <path d="M 90,55 Q 100,38 110,55" fill="none" stroke="#FFC400" stroke-width="3" stroke-linecap="round"/>
+          <path d="M 40,85 Q 25,90 40,100" fill="none" stroke="#7dd3fc" stroke-width="2.5"/>
+          <path d="M 160,85 Q 175,90 160,100" fill="none" stroke="#7dd3fc" stroke-width="2.5"/>
+          <text x="100" y="102" fill="#FFC400" font-family="'Outfit', sans-serif" font-weight="900" font-size="22" text-anchor="middle">DGRKC</text>
+        </svg>
+        <div class="card-logo-texts">
+          <h1>Admin <span>Sécurisé</span></h1>
+          <p>Authentification requise</p>
+        </div>
+      </div>
+
+      <div class="card-subtitle">
+        <h2>Accès Administrateur</h2>
+        <p>Entrez le mot de passe pour continuer</p>
+      </div>
+
+      <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+        <!-- Mot de passe -->
+        <div class="field-group">
+          <label class="field-label" for="password">Mot de passe Admin</label>
+          <div class="field-input-wrap">
+            <i class="field-icon" data-lucide="lock"></i>
+            <input type="password" id="password" class="field-input" placeholder="Code de sécurité" required autofocus>
+          </div>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div class="error-message" id="error-msg">
+          <i data-lucide="alert-circle"></i>
+          <span>Mot de passe incorrect</span>
+        </div>
+
+        <!-- Bouton -->
+        <button type="submit" class="btn-login" id="login-btn">
+          <i data-lucide="log-in"></i>
+          Accéder au Panel
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="login-footer">
+    <div>© 2026 <strong>DGR/KC</strong> – Tous droits réservés.</div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-msg');
+      const btn = document.getElementById('login-btn');
+
+      try {
+        const res = await fetch('http://localhost:3001/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          errorMsg.classList.remove('visible');
+          localStorage.setItem('admin_token', data.token);
+
+          btn.innerHTML = '<i data-lucide="check-circle"></i> Authentification réussie...';
+          btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+          lucide.createIcons();
+
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 800);
+        } else {
+          errorMsg.classList.add('visible');
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+        }
+      } catch (err) {
+        console.error('Erreur:', err);
+        errorMsg.innerHTML = '<i data-lucide="alert-circle"></i><span>Erreur serveur. Vérifiez la connexion.</span>';
+        errorMsg.classList.add('visible');
+      }
+    }
+  </script>
+</body>
+</html>

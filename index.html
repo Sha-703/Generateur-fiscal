@@ -36,9 +36,8 @@
                         <p class="subtitle">Générateur Fiscal v1.0</p>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-load-mock"
-                    title="Charger les données réelles du document BAGS & SACKS 2024">
-                    <i data-lucide="sparkles"></i> Exemple BAGS & SACKS
+                <button type="button" class="btn btn-danger btn-sm" id="btn-reset" title="Réinitialiser le formulaire">
+                    <i data-lucide="trash-2"></i> Réinitialiser
                 </button>
             </header>
 
@@ -52,27 +51,35 @@
                     <div class="grid-2">
                         <div class="form-group">
                             <label for="input-numero-note">Numéro Note de Perception</label>
-                            <input type="text" id="input-numero-note" placeholder="ex: 24041300002" required>
+                            <input type="text" id="input-numero-note" placeholder="Auto-généré" readonly>
                         </div>
                         <div class="form-group">
                             <label for="input-entite-fiscale">Entité Fiscale</label>
-                            <input type="text" id="input-entite-fiscale" placeholder="ex: SONGOLOLO" required>
+                            <select id="input-entite-fiscale" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
                         </div>
                     </div>
                     <div class="grid-2">
                         <div class="form-group">
                             <label for="input-banque">Banque de paiement</label>
-                            <input type="text" id="input-banque" placeholder="ex: RAW BANK Matadi Vignette" required>
+                            <select id="input-banque" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="input-numero-compte">N° Compte Bancaire</label>
-                            <input type="text" id="input-numero-compte" placeholder="ex: 04000593407-69" required>
+                            <select id="input-numero-compte" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
                         </div>
                     </div>
                     <div class="grid-2">
                         <div class="form-group">
                             <label for="input-antenne">Antenne émettrice</label>
-                            <input type="text" id="input-antenne" placeholder="ex: SONGOLOLO" required>
+                            <select id="input-antenne" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="input-date-emission">Date d'émission</label>
@@ -81,8 +88,8 @@
                     </div>
                     <div class="form-group">
                         <label for="input-ordonnateur">Nom de l'ordonnateur</label>
-                        <input type="text" id="input-ordonnateur" placeholder="ex: DIASIVI KAKINAMBUTAKO STEPHANE"
-                            required>
+                        <input type="text" id="input-ordonnateur" placeholder="Auto-rempli depuis la session"
+                            readonly>
                     </div>
                 </div>
 
@@ -95,7 +102,9 @@
                     <div class="grid-3">
                         <div class="form-group col-span-2">
                             <label for="input-redevable-nom">Nom ou Raison Sociale</label>
-                            <input type="text" id="input-redevable-nom" placeholder="ex: BAGS & SACKS SARL" required>
+                            <select id="input-redevable-nom" required>
+                                <option value="">-- Sélectionner un client --</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="input-redevable-forme">Forme Juridique</label>
@@ -137,15 +146,7 @@
                     </div>
                 </div>
 
-                <!-- SECTION : ACTIONS -->
-                <div class="action-bar card">
-                    <button type="button" class="btn btn-danger btn-block" id="btn-reset">
-                        <i data-lucide="trash-2"></i> Réinitialiser
-                    </button>
-                    <button type="submit" class="btn btn-success btn-block btn-lg" id="btn-generate-pdf">
-                        <i data-lucide="download"></i> Télécharger la Note (PDF)
-                    </button>
-                </div>
+                <!-- SECTION : ACTIONS (supprimée) -->
             </form>
         </aside>
 
@@ -157,10 +158,6 @@
                 </div>
                 <div class="preview-header-actions">
                     <span class="zoom-controls">Format A4 standard (DGR/KC)</span>
-                    <button type="button" class="btn btn-success btn-sm" id="btn-pdf-top"
-                        onclick="document.getElementById('btn-generate-pdf').click()">
-                        <i data-lucide="download"></i> Télécharger PDF
-                    </button>
                 </div>
             </div>
 
@@ -263,6 +260,23 @@
             </div>
         </main>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="page-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <p>© 2026 <strong>DGR/KC</strong> – Direction Générale des Recettes du Kongo Central</p>
+                <p class="footer-subtitle">Portail d'Ordonnancement Fiscal · Exercice Budgétaire 2026</p>
+            </div>
+            <div class="footer-right">
+                <p><strong>Exercice Fiscal :</strong> <span id="footer-exercise">2026</span></p>
+                <p><strong>Version :</strong> v1.0</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Tous droits réservés. Ce système est protégé par les lois en vigueur.</p>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script src="script.js"></script>

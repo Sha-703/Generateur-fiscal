@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - DGRKC</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #060d1f;
+      --accent: #3b82f6;
+      --dgrkc-blue: #0D5C75;
+      --dgrkc-gold: #FFC400;
+      --text-main: #f8fafc;
+      --text-muted: #64748b;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(15, 23, 42, 0.75);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--bg);
+      color: #333;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ARRIERE-PLAN ANIME */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      animation: orbFloat 12s ease-in-out infinite alternate;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, #0D5C75, transparent); top: -200px; left: -150px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, #3b82f6, transparent); bottom: -100px; right: -100px; animation-delay: 3s; }
+    .orb-3 { width: 350px; height: 350px; background: radial-gradient(circle, #FFC400, transparent); top: 40%; left: 55%; opacity: 0.18; animation-delay: 6s; }
+
+    @keyframes orbFloat {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(30px, -40px) scale(1.08); }
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 10; }
+    header { background: #0D5C75; color: white; padding: 2rem; margin-bottom: 2rem; border-radius: 8px; }
+    header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    header p { opacity: 0.9; }
+
+    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    .tab-btn { padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-size: 1rem; color: #94a3b8; border-bottom: 3px solid transparent; transition: all 0.3s; }
+    .tab-btn.active { color: var(--text-main); border-bottom-color: #3b82f6; }
+    .tab-btn:hover { color: var(--text-main); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .section { background: var(--glass); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.07); padding: 2rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+    .section h2 { margin-bottom: 1.5rem; color: var(--dgrkc-gold); font-size: 1.3rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main); }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-main);
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary { background: #0D5C75; color: white; }
+    .btn-primary:hover { background: #0a3f51; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-block { width: 100%; }
+
+    .table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+    .table th { background: rgba(255,255,255,0.05); padding: 1rem; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-main); }
+    .table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+    .table tr:hover { background: rgba(255,255,255,0.02); }
+
+    .actions { display: flex; gap: 0.5rem; }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.9rem; }
+
+    .alert { padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
+    .alert-success { background: rgba(16, 185, 129, 0.1); color: #86efac; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .alert-error { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .alert-hidden { display: none; }
+
+    .empty-state { text-align: center; padding: 3rem 2rem; color: #94a3b8; }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <!-- Arrière-plan animé -->
+  <div class="bg-canvas">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <script>
+    // Vérifier le token au chargement
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      window.location.href = 'login-admin.html';
+    }
+
+    const API_URL = 'http://localhost:3001';
+    const getHeaders = () => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    // Bouton déconnexion
+    function logout() {
+      localStorage.removeItem('admin_token');
+      window.location.href = 'login-admin.html';
+    }
+  </script>
+
+  <div class="container">
+    <header>
+      <h1>🛠️ Admin Panel DGRKC</h1>
+      <p>Gestion des utilisateurs, clients et configuration</p>
+      <button onclick="logout()" class="btn btn-danger btn-sm" style="position: absolute; top: 2rem; right: 2rem;">
+        <i data-lucide="log-out"></i> Déconnexion
+      </button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="config">Configuration</button>
+      <button class="tab-btn" data-tab="users">Utilisateurs</button>
+      <button class="tab-btn" data-tab="clients">Clients</button>
+    </div>
+
+    <!-- ========== TAB: CONFIGURATION ========== -->
+    <div id="config" class="tab-content active">
+      <div class="section">
+        <h2>Configuration Admin & Banque</h2>
+        <div id="config-alert" class="alert alert-hidden"></div>
+
+        <form id="config-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="entite_fiscale">Entité Fiscale</label>
+              <input type="text" id="entite_fiscale" placeholder="ex: SONGOLOLO" required>
+            </div>
+            <div class="form-group">
+              <label for="antenne">Antenne</label>
+              <input type="text" id="antenne" placeholder="ex: SONGOLOLO" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="banque">Banque</label>
+              <input type="text" id="banque" placeholder="ex: RAW BANK Matadi" required>
+            </div>
+            <div class="form-group">
+              <label for="numero_compte">Numéro Compte</label>
+              <input type="text" id="numero_compte" placeholder="ex: 04000593407-69" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">💾 Enregistrer Configuration</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========== TAB: UTILISATEURS ========== -->
+    <div id="users" class="tab-content">
+      <div class="section">
+        <h2>Créer Utilisateur</h2>
+        <div id="users-alert" class="alert alert-hidden"></div>
+
+        <form id="user-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="user_nom">Nom Complet</label>
+              <input type="text" id="user_nom" placeholder="ex: DIASIVI KAKINAMBUTAKO" required>
+            </div>
+            <div class="form-group">
+              <label for="user_antenne">Antenne</label>
+              <select id="user_antenne" required>
+                <option value="">-- Sélectionner --</option>
+                <option value="SONGOLOLO">Antenne de SONGOLOLO</option>
+                <option value="MATADI">Antenne de MATADI</option>
+                <option value="BOMA">Antenne de BOMA</option>
+                <option value="MUANDA">Antenne de MUANDA</option>
+                <option value="LUKULA">Antenne de LUKULA</option>
+                <option value="TSHELA">Antenne de TSHELA</option>
+                <option value="KASANGULU">Antenne de KASANGULU</option>
+                <option value="MBANZA-NGUNGU">Antenne de MBANZA-NGUNGU</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="user_code">Code d'accès (4 chiffres)</label>
+            <input type="text" id="user_code" placeholder="1234" maxlength="4" pattern="\d{4}" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">➕ Ajouter Utilisateur</button>
+        </form>
+      </div>
+
+      <div class="section">
+        <h2>Liste des Utilisateurs</h2>
+        <table class="table" id="users-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Antenne</th>
+              <th>Code</th>
+              <th>Créé le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="5" style="text-align: center; color: #999;">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========== TAB: CLIENTS ========== -->
+    <div id="clients" class="tab-content">
+      <div class="section">
+        <h2>Ajouter Client</h2>
+        <div id="clients-alert" class="alert alert-hidden"></div>
+
+        <form id="client-form">
+          <div class="form-group">
+            <label for="client_nom">Nom ou Raison Sociale</label>
+            <input type="text" id="client_nom" placeholder="ex: BAGS & SACKS SARL" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="client_forme">Forme Juridique</label>
+              <select id="client_forme">
+                <option value="PM">PM (Pers. Morale)</option>
+                <option value="PP">PP (Pers. Physique)</option>
+                <option value="SARL">SARL</option>
+                <option value="SA">SA</option>
+                <option value="Ets">Etablissement</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="client_rep">N° Répertoire</label>
+              <input type="text" id="client_rep" placeholder="ex: 240413M0002" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="client_adresse">Adresse</label>
+            <textarea id="client_adresse" rows="3" placeholder="ex: 3908, Cit Kimpese..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">➕ Ajouter Client</button>
+        </form>
+      </div>
+
+      <div class="section">
+        <h2>Liste des Clients</h2>
+        <table class="table" id="clients-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Forme</th>
+              <th>N° Répertoire</th>
+              <th>Adresse</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody">
+            <tr><td colspan="5" style="text-align: center; color: #999;">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('Initialisation tabs...');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      console.log('Tab trouvé:', btn.dataset.tab);
+      btn.addEventListener('click', () => {
+        console.log('Click sur tab:', btn.dataset.tab);
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ========== HELPERS ==========
+    function showAlert(elementId, message, type) {
+      const alert = document.getElementById(elementId);
+      alert.textContent = message;
+      alert.className = `alert alert-${type}`;
+      setTimeout(() => alert.classList.add('alert-hidden'), 3000);
+    }
+
+    // ========== CONFIGURATION ==========
+    document.getElementById('config-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(`${API_URL}/api/admin/config`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            entite_fiscale: document.getElementById('entite_fiscale').value,
+            banque: document.getElementById('banque').value,
+            numero_compte: document.getElementById('numero_compte').value,
+            antenne: document.getElementById('antenne').value
+          })
+        });
+        if (res.ok) {
+          showAlert('config-alert', '✅ Configuration enregistrée!', 'success');
+          document.getElementById('config-form').reset();
+        }
+      } catch (err) {
+        showAlert('config-alert', '❌ Erreur: ' + err.message, 'error');
+      }
+    });
+
+    // Charger config au démarrage
+    async function loadConfig() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/config`);
+        const config = await res.json();
+        if (config.entite_fiscale) {
+          document.getElementById('entite_fiscale').value = config.entite_fiscale;
+          document.getElementById('banque').value = config.banque;
+          document.getElementById('numero_compte').value = config.numero_compte;
+          document.getElementById('antenne').value = config.antenne;
+        }
+      } catch (err) {
+        console.error('Erreur chargement config:', err);
+      }
+    }
+
+    // ========== UTILISATEURS ==========
+    document.getElementById('user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(`${API_URL}/api/users`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            nom: document.getElementById('user_nom').value,
+            antenne: document.getElementById('user_antenne').value,
+            code: document.getElementById('user_code').value
+          })
+        });
+        if (res.ok) {
+          showAlert('users-alert', '✅ Utilisateur créé!', 'success');
+          document.getElementById('user-form').reset();
+          loadUsers();
+        }
+      } catch (err) {
+        showAlert('users-alert', '❌ Erreur: ' + err.message, 'error');
+      }
+    });
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_URL}/api/users`, {
+          headers: getHeaders()
+        });
+        const users = await res.json();
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = users.length ? users.map(u => `
+          <tr>
+            <td>${u.nom}</td>
+            <td>${u.antenne}</td>
+            <td><code>${u.code}</code></td>
+            <td>${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})"><i data-lucide="trash-2"></i></button></td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" style="text-align: center;">Aucun utilisateur</td></tr>';
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Erreur chargement utilisateurs:', err);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (confirm('Supprimer cet utilisateur?')) {
+        try {
+          await fetch(`${API_URL}/api/users/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+          });
+          loadUsers();
+        } catch (err) {
+          alert('Erreur: ' + err.message);
+        }
+      }
+    }
+
+    // ========== CLIENTS ==========
+    document.getElementById('client-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(`${API_URL}/api/clients`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            nom: document.getElementById('client_nom').value,
+            forme: document.getElementById('client_forme').value,
+            numero_rep: document.getElementById('client_rep').value,
+            adresse: document.getElementById('client_adresse').value
+          })
+        });
+        if (res.ok) {
+          showAlert('clients-alert', '✅ Client ajouté!', 'success');
+          document.getElementById('client-form').reset();
+          loadClients();
+        }
+      } catch (err) {
+        showAlert('clients-alert', '❌ Erreur: ' + err.message, 'error');
+      }
+    });
+
+    async function loadClients() {
+      try {
+        const res = await fetch(`${API_URL}/api/clients`);
+        const clients = await res.json();
+        const tbody = document.getElementById('clients-tbody');
+        tbody.innerHTML = clients.length ? clients.map(c => `
+          <tr>
+            <td>${c.nom}</td>
+            <td>${c.forme}</td>
+            <td>${c.numero_rep}</td>
+            <td>${c.adresse || '-'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})"><i data-lucide="trash-2"></i></button></td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" style="text-align: center;">Aucun client</td></tr>';
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Erreur chargement clients:', err);
+      }
+    }
+
+    async function deleteClient(id) {
+      if (confirm('Supprimer ce client?')) {
+        try {
+          await fetch(`${API_URL}/api/clients/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+          });
+          loadClients();
+        } catch (err) {
+          alert('Erreur: ' + err.message);
+        }
+      }
+    }
+
+    // ========== INITIALISATION ==========
+    loadConfig();
+    loadUsers();
+    loadClients();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

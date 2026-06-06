@@ -136,15 +136,22 @@
             padding: 2.5rem;
             width: 100%;
             max-width: 460px;
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .login-card::-webkit-scrollbar {
+            display: none;
         }
 
         .card-logo {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
 
@@ -197,13 +204,13 @@
         .login-form {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 0.75rem;
         }
 
         .field-group {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.25rem;
         }
 
         .field-label {
@@ -275,11 +282,11 @@
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             border: none;
             border-radius: 12px;
-            padding: 0.9rem;
+            padding: 0.75rem;
             color: #fff;
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -287,7 +294,7 @@
             justify-content: center;
             gap: 0.6rem;
             box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
         }
 
         .btn-login:hover {
@@ -381,11 +388,6 @@
                 </div>
             </div>
 
-            <div class="card-subtitle">
-                <h2>Bienvenue sur votre espace de travail</h2>
-                <p>Connectez-vous pour accéder au générateur de Notes de Perception</p>
-            </div>
-
             <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
                 <!-- Nom Agent -->
                 <div class="field-group">
@@ -393,25 +395,6 @@
                     <div class="field-input-wrap">
                         <i class="field-icon" data-lucide="user"></i>
                         <input type="text" id="agent-name" class="field-input" placeholder="ex: DIASIVI KAKINAMBUTAKO" required autocomplete="name">
-                    </div>
-                </div>
-
-                <!-- Antenne -->
-                <div class="field-group">
-                    <label class="field-label" for="agent-antenne">Antenne DGR/KC</label>
-                    <div class="field-input-wrap">
-                        <i class="field-icon" data-lucide="map-pin"></i>
-                        <select id="agent-antenne" class="field-input antenne-select" required>
-                            <option value="">-- Sélectionner votre antenne --</option>
-                            <option value="SONGOLOLO">Antenne de SONGOLOLO</option>
-                            <option value="MATADI">Antenne de MATADI</option>
-                            <option value="BOMA">Antenne de BOMA</option>
-                            <option value="MUANDA">Antenne de MUANDA</option>
-                            <option value="LUKULA">Antenne de LUKULA</option>
-                            <option value="TSHELA">Antenne de TSHELA</option>
-                            <option value="KASANGULU">Antenne de KASANGULU</option>
-                            <option value="MBANZA-NGUNGU">Antenne de MBANZA-NGUNGU</option>
-                        </select>
                     </div>
                 </div>
 
@@ -437,7 +420,7 @@
                 </div>
 
                 <!-- Indice de test -->
-                <div class="demo-hint">💡 Pour accéder : Code d'accès = <strong>1234</strong> (mode démonstration)</div>
+                <div class="demo-hint">💡 Utilisateurs créés dans Admin Panel · <a href="http://localhost:3001/admin.html" target="_blank" style="color: #FFC400; text-decoration: none; font-weight: 600;">Gérer ici →</a></div>
 
                 <!-- Bouton de connexion -->
                 <button type="submit" class="btn-login" id="login-btn">
@@ -468,38 +451,50 @@
         updateTime();
         setInterval(updateTime, 30000);
 
-        // Gestion de la connexion
-        function handleLogin(event) {
+        // Gestion de la connexion avec API
+        async function handleLogin(event) {
             event.preventDefault();
             const nomAgent = document.getElementById('agent-name').value.trim().toUpperCase();
-            const antenne = document.getElementById('agent-antenne').value;
             const code = document.getElementById('agent-code').value;
             const errorMsg = document.getElementById('error-msg');
             const btn = document.getElementById('login-btn');
 
-            if (code !== '1234') {
+            try {
+                const res = await fetch('http://localhost:3001/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nom: nomAgent, code })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    errorMsg.classList.remove('visible');
+
+                    // Sauvegarder la session
+                    sessionStorage.setItem('dgrkc_agent_nom', data.user.nom);
+                    sessionStorage.setItem('dgrkc_agent_antenne', data.user.antenne);
+                    sessionStorage.setItem('dgrkc_logged', 'true');
+
+                    // Animation du bouton
+                    btn.innerHTML = '<i data-lucide="check-circle"></i> Connexion réussie...';
+                    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    lucide.createIcons();
+
+                    // Redirection vers l'application principale
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 800);
+                } else {
+                    errorMsg.classList.add('visible');
+                    document.getElementById('agent-code').value = '';
+                    document.getElementById('agent-code').focus();
+                }
+            } catch (err) {
+                console.error('Erreur connexion:', err);
+                errorMsg.innerHTML = '<i data-lucide="alert-circle"></i><span>Erreur serveur. Vérifiez la connexion.</span>';
                 errorMsg.classList.add('visible');
-                document.getElementById('agent-code').value = '';
-                document.getElementById('agent-code').focus();
-                return;
             }
-
-            errorMsg.classList.remove('visible');
-
-            // Sauvegarder la session
-            sessionStorage.setItem('dgrkc_agent_nom', nomAgent);
-            sessionStorage.setItem('dgrkc_agent_antenne', antenne);
-            sessionStorage.setItem('dgrkc_logged', 'true');
-
-            // Animation du bouton
-            btn.innerHTML = '<i data-lucide="check-circle"></i> Connexion réussie...';
-            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            lucide.createIcons();
-
-            // Redirection vers l'application principale
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 800);
         }
     </script>
 </body>

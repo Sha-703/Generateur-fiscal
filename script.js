@@ -2,23 +2,73 @@
    MOTEUR LOGIQUE ET DYNAMIQUE : GENERATEUR DE NOTES DE PERCEPTION
    ========================================================================== */
 
-// 1. Ã‰tat global de l'application
+const API_URL = 'http://localhost:3001';
+
+// Initialisation au chargement de la page
+async function initializeApp() {
+    // Pré-remplir l'ordonnateur depuis la session
+    const nomOrdonnateur = sessionStorage.getItem('dgrkc_agent_nom');
+    if (nomOrdonnateur) {
+        document.getElementById('input-ordonnateur').value = nomOrdonnateur;
+    }
+
+    // Charger configuration admin depuis l'API
+    try {
+        const configRes = await fetch(`${API_URL}/api/admin/config`);
+        const config = await configRes.json();
+        if (config.entite_fiscale) {
+            state.entiteFiscale = config.entite_fiscale;
+            state.banque = config.banque;
+            state.numeroCompte = config.numero_compte;
+            state.antenne = config.antenne;
+
+            document.getElementById('input-entite-fiscale').value = config.entite_fiscale;
+            document.getElementById('input-banque').value = config.banque;
+            document.getElementById('input-numero-compte').value = config.numero_compte;
+            document.getElementById('input-antenne').value = config.antenne;
+        }
+    } catch (err) {
+        console.error('Erreur chargement config:', err);
+    }
+
+    // Charger clients depuis l'API
+    try {
+        const clientsRes = await fetch(`${API_URL}/api/clients`);
+        const clients = await clientsRes.json();
+        window.availableClients = clients;
+    } catch (err) {
+        console.error('Erreur chargement clients:', err);
+    }
+
+    // Générer prochain numéro
+    try {
+        const numeroRes = await fetch(`${API_URL}/api/numero-next`);
+        const { numero } = await numeroRes.json();
+        state.numeroNote = numero;
+        document.getElementById('input-numero-note').value = numero;
+    } catch (err) {
+        console.error('Erreur génération numéro:', err);
+    }
+}
+
+// Appeler l'initialisation au chargement du DOM
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// 1. État global de l'application
 const state = {
-    numeroNote: "24041300002",
-    entiteFiscale: "SONGOLOLO",
-    banque: "RAW BANK Matadi Vignette",
-    numeroCompte: "04000593407-69",
-    antenne: "SONGOLOLO",
-    dateEmission: "2024-07-10",
-    ordonnateur: "DIASIVI KAKINAMBUTAKO STEPHANE",
-    redevableNom: "BAGS & SACKS SARL",
+    numeroNote: "",
+    entiteFiscale: "",
+    banque: "",
+    numeroCompte: "",
+    antenne: "",
+    dateEmission: new Date().toISOString().split('T')[0],
+    ordonnateur: "",
+    redevableNom: "",
     redevableForme: "PM",
-    redevableRep: "240413M0002",
-    redevableAdresse: "3908, Cit Kimpese, T/Songololo, Pr/Kongo-central, P/RDC",
+    redevableRep: "",
+    redevableAdresse: "",
     actes: [
-        { id: "1", acte: "IRV", imputation: "", periode: "2024", exigibilite: "", principal: 1007805.15, penalite: 0.00 },
-        { id: "2", acte: "TSCR", imputation: "", periode: "2024", exigibilite: "", principal: 723410.82, penalite: 0.00 },
-        { id: "3", acte: "RAV", imputation: "", periode: "2024", exigibilite: "", principal: 331333.20, penalite: 0.00 }
+        { id: "1", acte: "", imputation: "", periode: "", exigibilite: "", principal: 0, penalite: 0 }
     ]
 };
 
@@ -319,23 +369,33 @@ function actualiserApercu() {
 
     let grandTotal = 0;
 
-    state.actes.forEach((acte, index) => {
-        const rowTotal = acte.principal + acte.penalite;
-        grandTotal += rowTotal;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td class="text-center">${index + 1}</td>
-            <td class="text-center"><strong>${acte.acte}</strong></td>
-            <td class="text-center">${acte.imputation || ""}</td>
-            <td class="text-center">${acte.periode}</td>
-            <td class="text-center">${acte.exigibilite || ""}</td>
-            <td class="text-right">${formaterMontant(acte.principal)}</td>
-            <td class="text-right">${formaterMontant(acte.penalite)}</td>
-            <td class="text-right"><strong>${formaterMontant(rowTotal)}</strong></td>
+    if (state.actes.length === 0) {
+        const emptyRow = document.createElement("tr");
+        emptyRow.innerHTML = `
+            <td colspan="8" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">
+                Aucun acte saisi. Ajoutez des actes dans la section "Actes Fiscaux" pour voir l'aperçu.
+            </td>
         `;
-        tableBody.appendChild(tr);
-    });
+        tableBody.appendChild(emptyRow);
+    } else {
+        state.actes.forEach((acte, index) => {
+            const rowTotal = acte.principal + acte.penalite;
+            grandTotal += rowTotal;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center">${index + 1}</td>
+                <td class="text-center"><strong>${acte.acte}</strong></td>
+                <td class="text-center">${acte.imputation || ""}</td>
+                <td class="text-center">${acte.periode}</td>
+                <td class="text-center">${acte.exigibilite || ""}</td>
+                <td class="text-right">${formaterMontant(acte.principal)}</td>
+                <td class="text-right">${formaterMontant(acte.penalite)}</td>
+                <td class="text-right"><strong>${formaterMontant(rowTotal)}</strong></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
 
     // 3. Totaux (chiffres & lettres)
     document.getElementById("preview-total-chiffres").innerText = formaterMontant(grandTotal);
@@ -367,26 +427,30 @@ function actualiserQRCode(grandTotal) {
 // ==========================================================================
 
 // Charger l'exemple fiscal rÃ©el "BAGS & SACKS"
-document.getElementById("btn-load-mock").addEventListener("click", () => {
-    state.numeroNote = "24041300002";
-    state.entiteFiscale = "SONGOLOLO";
-    state.banque = "RAW BANK Matadi Vignette";
-    state.numeroCompte = "04000593407-69";
-    state.antenne = "SONGOLOLO";
-    state.dateEmission = "2024-07-10";
-    state.ordonnateur = "DIASIVI KAKINAMBUTAKO STEPHANE";
-    state.redevableNom = "BAGS & SACKS SARL";
-    state.redevableForme = "PM";
-    state.redevableRep = "240413M0002";
-    state.redevableAdresse = "3908, Cit Kimpese, T/Songololo, Pr/Kongo-central, P/RDC";
-    state.actes = [
-        { id: "1", acte: "IRV", imputation: "", periode: "2024", exigibilite: "", principal: 1007805.15, penalite: 0.00 },
-        { id: "2", acte: "TSCR", imputation: "", periode: "2024", exigibilite: "", principal: 723410.82, penalite: 0.00 },
-        { id: "3", acte: "RAV", imputation: "", periode: "2024", exigibilite: "", principal: 331333.20, penalite: 0.00 }
-    ];
+// Charger les données d'exemple (bouton supprimé)
+const btnLoadMock = document.getElementById("btn-load-mock");
+if (btnLoadMock) {
+    btnLoadMock.addEventListener("click", () => {
+        state.numeroNote = "24041300002";
+        state.entiteFiscale = "SONGOLOLO";
+        state.banque = "RAW BANK Matadi Vignette";
+        state.numeroCompte = "04000593407-69";
+        state.antenne = "SONGOLOLO";
+        state.dateEmission = "2024-07-10";
+        state.ordonnateur = "DIASIVI KAKINAMBUTAKO STEPHANE";
+        state.redevableNom = "BAGS & SACKS SARL";
+        state.redevableForme = "PM";
+        state.redevableRep = "240413M0002";
+        state.redevableAdresse = "3908, Cit Kimpese, T/Songololo, Pr/Kongo-central, P/RDC";
+        state.actes = [
+            { id: "1", acte: "IRV", imputation: "", periode: "2024", exigibilite: "", principal: 1007805.15, penalite: 0.00 },
+            { id: "2", acte: "TSCR", imputation: "", periode: "2024", exigibilite: "", principal: 723410.82, penalite: 0.00 },
+            { id: "3", acte: "RAV", imputation: "", periode: "2024", exigibilite: "", principal: 331333.20, penalite: 0.00 }
+        ];
 
-    chargerFormulaireDepuisEtat();
-});
+        chargerFormulaireDepuisEtat();
+    });
+}
 
 // RÃ©initialiser la saisie
 document.getElementById("btn-reset").addEventListener("click", () => {
@@ -985,6 +1049,71 @@ function renderSections() {
 
 
 // Gestionnaire d'onglets immédiat (independant de la session)
+
+// ==========================================================================
+// CHARGEMENT DES DONNÉES DEPUIS L'API
+// ==========================================================================
+
+async function chargerClientsEtConfig() {
+    try {
+        // Charger les clients
+        const clientsRes = await fetch('http://localhost:3001/api/clients');
+        const clients = await clientsRes.json();
+
+        const selectRedevable = document.getElementById('input-redevable-nom');
+        selectRedevable.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+
+        clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.nom;
+            option.dataset.id = client.id;
+            option.dataset.forme = client.forme;
+            option.dataset.rep = client.numero_rep;
+            option.dataset.adresse = client.adresse;
+            option.textContent = client.nom;
+            selectRedevable.appendChild(option);
+        });
+
+        // Charger la configuration
+        const configRes = await fetch('http://localhost:3001/api/admin/config');
+        const config = await configRes.json();
+
+        if (config.entite_fiscale) {
+            const selectEntite = document.getElementById('input-entite-fiscale');
+            selectEntite.innerHTML = `<option value="${config.entite_fiscale}">${config.entite_fiscale}</option>`;
+
+            const selectBanque = document.getElementById('input-banque');
+            selectBanque.innerHTML = `<option value="${config.banque}">${config.banque}</option>`;
+
+            const selectCompte = document.getElementById('input-numero-compte');
+            selectCompte.innerHTML = `<option value="${config.numero_compte}">${config.numero_compte}</option>`;
+
+            const selectAntenne = document.getElementById('input-antenne');
+            selectAntenne.innerHTML = `<option value="${config.antenne}">${config.antenne}</option>`;
+
+            // Mettre à jour l'état
+            state.entiteFiscale = config.entite_fiscale;
+            state.banque = config.banque;
+            state.numeroCompte = config.numero_compte;
+            state.antenne = config.antenne;
+        }
+    } catch (err) {
+        console.error('Erreur chargement données:', err);
+    }
+}
+
+// Quand un client est sélectionné, remplir les autres champs
+document.getElementById('input-redevable-nom').addEventListener('change', (e) => {
+    const option = e.target.options[e.target.selectedIndex];
+    if (option.dataset.forme) {
+        document.getElementById('input-redevable-forme').value = option.dataset.forme;
+        document.getElementById('input-redevable-rep').value = option.dataset.rep || '';
+        document.getElementById('input-redevable-adresse').value = option.dataset.adresse || '';
+    }
+});
+
+// Charger les données au démarrage
+window.addEventListener('load', chargerClientsEtConfig);
 
 
 

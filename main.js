@@ -1,8 +1,25 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
+const { spawn } = require('child_process');
 
 let mainWindow;
+let serverProcess;
+
+function startServer() {
+  return new Promise((resolve) => {
+    const serverPath = path.join(__dirname, 'server', 'server.js');
+    serverProcess = spawn('node', [serverPath], {
+      stdio: 'inherit',
+      shell: true
+    });
+
+    serverProcess.on('error', (err) => {
+      console.error('Erreur serveur:', err);
+    });
+
+    setTimeout(() => resolve(), 2000);
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -18,10 +35,6 @@ function createWindow() {
     icon: path.join(__dirname, 'assets', 'icon.png')
   });
 
-  const startUrl = isDev
-    ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../build/index.html')}`;
-
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   mainWindow.on('closed', () => {
@@ -29,9 +42,13 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.on('ready', async () => {
+  await startServer();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
+  if (serverProcess) serverProcess.kill();
   if (process.platform !== 'darwin') {
     app.quit();
   }

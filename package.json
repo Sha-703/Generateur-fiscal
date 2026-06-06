@@ -15,5 +15,10 @@
     "electron": "latest",
     "electron-builder": "latest",
     "electron-is-dev": "latest"
+  },
+  "dependencies": {
+    "ico": "^0.3.3",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
   }
 }
