@@ -1,0 +1,13 @@
+services:
+  - type: web_service
+    name: dgrkc-server
+    env: node
+    region: frankfurt
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true

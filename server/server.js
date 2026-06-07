@@ -6,7 +6,7 @@ const db = require('./database');
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = 'dgrkc-admin-secret-key-2026';
 
 // Middleware
