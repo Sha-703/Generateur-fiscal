@@ -49,6 +49,9 @@ async function initializeApp() {
     } catch (err) {
         console.error('Erreur génération numéro:', err);
     }
+
+    // Mettre à jour immédiatement l'aperçu avec les données chargées
+    actualiserApercu();
 }
 
 // Appeler l'initialisation au chargement du DOM
@@ -1096,6 +1099,9 @@ async function chargerClientsEtConfig() {
             state.banque = config.banque;
             state.numeroCompte = config.numero_compte;
             state.antenne = config.antenne;
+
+            // Mettre à jour immédiatement l'aperçu et le formulaire
+            actualiserApercu();
         }
     } catch (err) {
         console.error('Erreur chargement données:', err);
