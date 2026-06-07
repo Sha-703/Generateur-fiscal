@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "cd server && npm start",
+    "postinstall": "cd server && npm install",
     "start-electron": "electron .",
     "build": "electron-builder",
     "build-win": "electron-builder --win"
