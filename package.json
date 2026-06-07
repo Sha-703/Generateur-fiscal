@@ -4,8 +4,8 @@
   "description": "DGR/KC - Générateur de Note de Perception",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "start-server": "cd server && npm start",
+    "start": "cd server && npm start",
+    "start-electron": "electron .",
     "build": "electron-builder",
     "build-win": "electron-builder --win"
   },
