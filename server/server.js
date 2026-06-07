@@ -200,6 +200,10 @@ app.get('/api/numero-next', async (req, res) => {
 });
 
 // ============ ADMIN PANEL (HTML STATIC) ============
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login-admin.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ============ FICHIERS STATIQUES DE LA RACINE ============
