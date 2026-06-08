@@ -456,8 +456,10 @@
             const errorMsg = document.getElementById('error-msg');
             const btn = document.getElementById('login-btn');
 
+            const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+
             try {
-                const res = await fetch('http://localhost:3001/api/users/login', {
+                const res = await fetch(`${API_URL}/api/users/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nom: nomAgent, code })

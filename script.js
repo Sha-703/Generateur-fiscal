@@ -2,7 +2,13 @@
    MOTEUR LOGIQUE ET DYNAMIQUE : GENERATEUR DE NOTES DE PERCEPTION
    ========================================================================== */
 
-const API_URL = 'http://localhost:3001';
+const API_URL = (() => {
+    const origin = window.location.origin || '';
+    if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost') || origin.startsWith('file://')) {
+        return 'http://localhost:3001';
+    }
+    return origin;
+})();
 
 // Initialisation au chargement de la page
 async function initializeApp() {
@@ -1060,7 +1066,7 @@ function renderSections() {
 async function chargerClientsEtConfig() {
     try {
         // Charger les clients
-        const clientsRes = await fetch('http://localhost:3001/api/clients');
+        const clientsRes = await fetch(`${API_URL}/api/clients`);
         const clients = await clientsRes.json();
 
         const selectRedevable = document.getElementById('input-redevable-nom');
@@ -1078,7 +1084,7 @@ async function chargerClientsEtConfig() {
         });
 
         // Charger la configuration
-        const configRes = await fetch('http://localhost:3001/api/admin/config');
+        const configRes = await fetch(`${API_URL}/api/admin/config`);
         const config = await configRes.json();
 
         if (config.entite_fiscale) {
