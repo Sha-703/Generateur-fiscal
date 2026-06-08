@@ -364,6 +364,87 @@ textarea:focus {
     min-height: 0;
 }
 
+/* Historique modal overlay matching app look */
+.history-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    background: rgba(3, 7, 18, 0.6);
+    z-index: 9999;
+    padding: 3vh 1rem;
+}
+
+.history-overlay.open {
+    display: flex;
+}
+
+.history-panel {
+    width: 720px;
+    max-width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    color: var(--text-main);
+    overflow: hidden;
+}
+
+.history-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.history-panel-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.history-panel-actions button { margin-left: 0.5rem; }
+
+.history-panel-search input {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.02);
+    color: var(--text-main);
+}
+
+.history-list {
+    max-height: 60vh;
+    overflow: auto;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.history-item .info {
+    display:flex;
+    flex-direction:column;
+    gap:0.25rem;
+}
+
+.history-item .actions { display:flex; gap:0.5rem; }
+
+.history-item .hi-montant { color: var(--accent); font-weight:700; }
+
 .preview-header {
     background: rgba(15, 23, 42, 0.5);
     padding: 1rem 1.5rem;

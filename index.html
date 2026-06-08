@@ -39,6 +39,9 @@
                 <button type="button" class="btn btn-danger btn-sm" id="btn-reset" title="Réinitialiser le formulaire">
                     <i data-lucide="trash-2"></i> Réinitialiser
                 </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-show-history" title="Historique des notes">
+                    <i data-lucide="clock"></i> Historique <span id="history-count" class="badge">0</span>
+                </button>
             </header>
 
             <form id="note-form" class="editor-form">
@@ -282,6 +285,22 @@
     </footer>
 
     <!-- Scripts -->
+    <!-- Historique Overlay -->
+    <div id="history-overlay" class="history-overlay">
+        <div class="history-panel">
+            <div class="history-panel-header">
+                <h3>Historique des notes</h3>
+                <div class="history-panel-actions">
+                    <button id="btn-save-history" class="btn btn-primary btn-xs"><i data-lucide="save"></i> Sauvegarder</button>
+                    <button id="btn-close-history" class="btn btn-light btn-xs"><i data-lucide="x"></i> Fermer</button>
+                </div>
+            </div>
+            <div class="history-panel-search">
+                <input id="history-search-input" placeholder="Rechercher par nom ou numéro" />
+            </div>
+            <div id="history-list" class="history-list"></div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 

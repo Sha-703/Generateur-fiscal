@@ -479,23 +479,9 @@ if (btnLoadMock) {
 
 // RÃ©initialiser la saisie
 document.getElementById("btn-reset").addEventListener("click", () => {
-    if (confirm("Voulez-vous vraiment rÃ©initialiser le formulaire ?")) {
-        state.numeroNote = "";
-        state.entiteFiscale = "";
-        state.banque = "";
-        state.numeroCompte = "";
-        state.antenne = "";
-        state.dateEmission = new Date().toISOString().split("T")[0];
-        state.ordonnateur = "";
-        state.redevableNom = "";
-        state.redevableForme = "PM";
-        state.redevableRep = "";
-        state.redevableAdresse = "";
-        state.actes = [
-            { id: "1", acte: "", imputation: "", periode: new Date().getFullYear().toString(), exigibilite: "", principal: 0.00, penalite: 0.00 }
-        ];
-
-        chargerFormulaireDepuisEtat();
+    if (confirm("Voulez-vous vraiment réinitialiser le formulaire ?")) {
+        // Recharger l'application pour s'assurer d'une réinitialisation complète
+        window.location.reload();
     }
 });
 
@@ -655,32 +641,37 @@ function renderHistorique(filtre = "") {
     const liste = document.getElementById("history-list");
     if (!liste) return;
 
-    const filtrees = filtre
-        ? historique.filter(e =>
-            e.redevableNom.toLowerCase().includes(filtre.toLowerCase()) ||
-            e.numeroNote.toLowerCase().includes(filtre.toLowerCase())
-          )
-        : historique;
+        const filtrees = filtre
+                ? historique.filter(e =>
+                        (e.redevableNom || "").toLowerCase().includes(filtre.toLowerCase()) ||
+                        (e.numeroNote || "").toLowerCase().includes(filtre.toLowerCase())
+                    )
+                : historique;
 
     if (filtrees.length === 0) {
         liste.innerHTML = `
-            <div class="history-empty">
+            <div class="history-empty" style="padding:1rem; text-align:center; color:var(--text-muted)">
                 <i data-lucide="inbox"></i>
-                <p>${filtre ? "Aucune note trouvÃ©e." : "Aucune note sauvegardÃ©e pour l'instant."}</p>
+                <p>${filtre ? "Aucune note trouvée." : "Aucune note sauvegardée pour l'instant."}</p>
             </div>`;
         lucide.createIcons();
         return;
     }
 
     liste.innerHTML = filtrees.map(e => `
-        <div class="history-item" onclick="chargerDepuisHistorique('${e.id}')">
-            <div class="hi-top">
-                <span class="hi-redevable">${e.redevableNom || "(Sans nom)"}</span>
-                <span class="hi-montant">${formaterMontant(e.total)}</span>
+        <div class="history-item">
+            <div class="info">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+                    <div>
+                        <div class="hi-redevable">${e.redevableNom || "(Sans nom)"}</div>
+                        <div class="hi-note-num" style="color:var(--text-muted); font-size:0.85rem;">N° ${e.numeroNote || "--"} · ${e.dateEnregistrement}</div>
+                    </div>
+                    <div class="hi-montant">${formaterMontant(e.total)}</div>
+                </div>
             </div>
-            <div class="hi-bottom">
-                <span class="hi-note-num">NÂ° ${e.numeroNote || "--"}</span>
-                <span class="hi-date">${e.dateEnregistrement}</span>
+            <div class="actions">
+                <button class="btn btn-secondary btn-xs" onclick="chargerDepuisHistorique('${e.id}')"><i data-lucide="chevrons-left"></i> Charger</button>
+                <button class="btn btn-primary btn-xs" onclick="telechargerHistorique('${e.id}')"><i data-lucide="download"></i> Télécharger</button>
             </div>
         </div>
     `).join("");
@@ -696,14 +687,29 @@ window.chargerDepuisHistorique = function(id) {
 
     chargerFormulaireDepuisEtat();
     fermerHistorique();
-    afficherToast("success", "file-text", `Note "${entree.redevableNom}" rechargÃ©e !`);
+    afficherToast("success", "file-text", `Note "${entree.redevableNom}" rechargée !`);
+};
+
+window.telechargerHistorique = function(id) {
+    const historique = chargerHistorique();
+    const entree = historique.find(e => e.id === id);
+    if (!entree) return;
+    // Restaurer l'état avant export
+    Object.assign(state, entree.snapshot);
+    chargerFormulaireDepuisEtat();
+    try {
+        exporterPDF();
+        afficherToast("success", "file-down", `Téléchargement de "${entree.redevableNom}" lancé.`);
+    } catch (err) {
+        console.error('Erreur téléchargement historique:', err);
+        afficherToast("error", "alert-circle", `Échec du téléchargement.`);
+    }
 };
 
 function initHistorique() {
     const btnSave = document.getElementById("btn-save-history");
     const btnShow = document.getElementById("btn-show-history");
     const btnClose = document.getElementById("btn-close-history");
-    const btnClear = document.getElementById("btn-clear-history");
     const overlay = document.getElementById("history-overlay");
     const searchInput = document.getElementById("history-search-input");
 
@@ -711,7 +717,10 @@ function initHistorique() {
 
     if (btnShow) btnShow.addEventListener("click", () => {
         renderHistorique();
-        overlay.classList.add("open");
+        if (overlay) {
+            overlay.style.display = 'block';
+            overlay.classList.add("open");
+        }
         lucide.createIcons();
     });
 
@@ -722,14 +731,6 @@ function initHistorique() {
         if (e.target === overlay) fermerHistorique();
     });
 
-    if (btnClear) btnClear.addEventListener("click", () => {
-        if (confirm("Effacer tout l'historique ? Cette action est irrÃ©versible.")) {
-            localStorage.removeItem(HISTORY_KEY);
-            mettreAJourCompteurs();
-            renderHistorique();
-            afficherToast("success", "trash-2", "Historique effacÃ©.");
-        }
-    });
 
     if (searchInput) searchInput.addEventListener("input", (e) => {
         renderHistorique(e.target.value);
@@ -741,6 +742,7 @@ function initHistorique() {
 function fermerHistorique() {
     const overlay = document.getElementById("history-overlay");
     if (overlay) overlay.classList.remove("open");
+    if (overlay) overlay.style.display = 'none';
 }
 
 // ==========================================================================
@@ -1099,27 +1101,52 @@ async function chargerClientsEtConfig() {
             selectRedevable.appendChild(option);
         });
 
-        // Charger la configuration
+        // Charger TOUTES les configurations
         const configRes = await fetch(`${API_URL}/api/admin/config`);
         const configs = await configRes.json();
-        const config = Array.isArray(configs) && configs.length > 0 ? configs[0] : {};
 
-        if (config.entite_fiscale) {
+        if (Array.isArray(configs) && configs.length > 0) {
+            // Charger les banques avec tous leurs éléments attachés
+            const selectBanque = document.getElementById('input-banque');
+            selectBanque.innerHTML = '<option value="">-- Sélectionner --</option>';
+            
+            configs.forEach(config => {
+                const option = document.createElement('option');
+                option.value = config.banque;
+                option.dataset.id = config.id;
+                option.dataset.entite = config.entite_fiscale;
+                option.dataset.numeroCompte = config.numero_compte;
+                option.dataset.antenne = config.antenne;
+                option.textContent = config.banque;
+                selectBanque.appendChild(option);
+            });
+
+            // Charger les autres selects avec les valeurs de la première configuration
+            const config = configs[0];
+
             const selectEntite = document.getElementById('input-entite-fiscale');
-            selectEntite.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.entite_fiscale}">${config.entite_fiscale}</option>`;
+            selectEntite.innerHTML = '<option value="">-- Sélectionner --</option>';
+            configs.forEach(cfg => {
+                const option = document.createElement('option');
+                option.value = cfg.entite_fiscale;
+                option.textContent = cfg.entite_fiscale;
+                selectEntite.appendChild(option);
+            });
             selectEntite.value = config.entite_fiscale;
 
-            const selectBanque = document.getElementById('input-banque');
-            selectBanque.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.banque}">${config.banque}</option>`;
-            selectBanque.value = config.banque;
+            const selectAntenne = document.getElementById('input-antenne');
+            selectAntenne.innerHTML = '<option value="">-- Sélectionner --</option>';
+            configs.forEach(cfg => {
+                const option = document.createElement('option');
+                option.value = cfg.antenne;
+                option.textContent = cfg.antenne;
+                selectAntenne.appendChild(option);
+            });
+            selectAntenne.value = config.antenne;
 
             const selectCompte = document.getElementById('input-numero-compte');
-            selectCompte.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.numero_compte}">${config.numero_compte}</option>`;
+            selectCompte.innerHTML = '<option value="">-- Sélectionner --</option>';
             selectCompte.value = config.numero_compte;
-
-            const selectAntenne = document.getElementById('input-antenne');
-            selectAntenne.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.antenne}">${config.antenne}</option>`;
-            selectAntenne.value = config.antenne;
 
             // Mettre à jour l'état
             state.entiteFiscale = config.entite_fiscale;
@@ -1135,6 +1162,26 @@ async function chargerClientsEtConfig() {
     }
 }
 
+// Quand une banque est sélectionnée, charger tous ses éléments attachés
+document.getElementById('input-banque').addEventListener('change', (e) => {
+    const option = e.target.options[e.target.selectedIndex];
+    if (option.dataset.entite) {
+        // Mettre à jour les autres champs avec les valeurs de cette banque
+        document.getElementById('input-entite-fiscale').value = option.dataset.entite;
+        document.getElementById('input-numero-compte').value = option.dataset.numeroCompte || '';
+        document.getElementById('input-antenne').value = option.dataset.antenne || '';
+        
+        // Mettre à jour l'état
+        state.banque = option.value;
+        state.entiteFiscale = option.dataset.entite;
+        state.numeroCompte = option.dataset.numeroCompte || '';
+        state.antenne = option.dataset.antenne || '';
+        
+        // Mettre à jour l'aperçu
+        actualiserApercu();
+    }
+});
+
 // Quand un client est sélectionné, remplir les autres champs
 document.getElementById('input-redevable-nom').addEventListener('change', (e) => {
     const option = e.target.options[e.target.selectedIndex];
@@ -1142,6 +1189,15 @@ document.getElementById('input-redevable-nom').addEventListener('change', (e) =>
         document.getElementById('input-redevable-forme').value = option.dataset.forme;
         document.getElementById('input-redevable-rep').value = option.dataset.rep || '';
         document.getElementById('input-redevable-adresse').value = option.dataset.adresse || '';
+        
+        // Mettre à jour l'état
+        state.redevableNom = option.value;
+        state.redevableForme = option.dataset.forme;
+        state.redevableRep = option.dataset.rep || '';
+        state.redevableAdresse = option.dataset.adresse || '';
+        
+        // Mettre à jour l'aperçu immédiatement
+        actualiserApercu();
     }
 });
 
