@@ -25,7 +25,9 @@ async function initializeApp() {
     // Charger configuration admin depuis l'API
     try {
         const configRes = await fetch(`${API_URL}/api/admin/config`);
-        const config = await configRes.json();
+        const configs = await configRes.json();
+        const config = Array.isArray(configs) && configs.length > 0 ? configs[0] : {};
+        
         if (config.entite_fiscale) {
             state.entiteFiscale = config.entite_fiscale;
             state.banque = config.banque;
@@ -1099,20 +1101,25 @@ async function chargerClientsEtConfig() {
 
         // Charger la configuration
         const configRes = await fetch(`${API_URL}/api/admin/config`);
-        const config = await configRes.json();
+        const configs = await configRes.json();
+        const config = Array.isArray(configs) && configs.length > 0 ? configs[0] : {};
 
         if (config.entite_fiscale) {
             const selectEntite = document.getElementById('input-entite-fiscale');
-            selectEntite.innerHTML = `<option value="${config.entite_fiscale}">${config.entite_fiscale}</option>`;
+            selectEntite.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.entite_fiscale}">${config.entite_fiscale}</option>`;
+            selectEntite.value = config.entite_fiscale;
 
             const selectBanque = document.getElementById('input-banque');
-            selectBanque.innerHTML = `<option value="${config.banque}">${config.banque}</option>`;
+            selectBanque.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.banque}">${config.banque}</option>`;
+            selectBanque.value = config.banque;
 
             const selectCompte = document.getElementById('input-numero-compte');
-            selectCompte.innerHTML = `<option value="${config.numero_compte}">${config.numero_compte}</option>`;
+            selectCompte.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.numero_compte}">${config.numero_compte}</option>`;
+            selectCompte.value = config.numero_compte;
 
             const selectAntenne = document.getElementById('input-antenne');
-            selectAntenne.innerHTML = `<option value="${config.antenne}">${config.antenne}</option>`;
+            selectAntenne.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.antenne}">${config.antenne}</option>`;
+            selectAntenne.value = config.antenne;
 
             // Mettre à jour l'état
             state.entiteFiscale = config.entite_fiscale;

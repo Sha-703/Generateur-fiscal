@@ -164,8 +164,8 @@ app.delete('/api/clients/:id', verifyToken, async (req, res) => {
 // ============ API ADMIN CONFIG ============
 app.get('/api/admin/config', async (req, res) => {
   try {
-    const config = await db.get('SELECT * FROM admin_config LIMIT 1');
-    res.json(config || {});
+    const configs = await db.all('SELECT * FROM admin_config ORDER BY id DESC');
+    res.json(configs || []);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -174,10 +174,22 @@ app.get('/api/admin/config', async (req, res) => {
 app.post('/api/admin/config', verifyToken, async (req, res) => {
   try {
     const { entite_fiscale, banque, numero_compte, antenne } = req.body;
-    await db.run('DELETE FROM admin_config');
-    await db.run(
+    const result = await db.run(
       'INSERT INTO admin_config (entite_fiscale, banque, numero_compte, antenne) VALUES (?, ?, ?, ?)',
       [entite_fiscale, banque, numero_compte, antenne]
+    );
+    res.json({ success: true, id: result.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/config/:id', verifyToken, async (req, res) => {
+  try {
+    const { entite_fiscale, banque, numero_compte, antenne } = req.body;
+    await db.run(
+      'UPDATE admin_config SET entite_fiscale=?, banque=?, numero_compte=?, antenne=? WHERE id=?',
+      [entite_fiscale, banque, numero_compte, antenne, req.params.id]
     );
     res.json({ success: true });
   } catch (err) {
@@ -185,9 +197,9 @@ app.post('/api/admin/config', verifyToken, async (req, res) => {
   }
 });
 
-app.delete('/api/admin/config', verifyToken, async (req, res) => {
+app.delete('/api/admin/config/:id', verifyToken, async (req, res) => {
   try {
-    await db.run('DELETE FROM admin_config');
+    await db.run('DELETE FROM admin_config WHERE id=?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

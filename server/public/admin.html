@@ -405,19 +405,19 @@
     async function loadConfigsList() {
       try {
         const res = await fetch(`${API_URL}/api/admin/config`);
-        const config = await res.json();
+        const configs = await res.json();
         const tbody = document.getElementById('config-tbody');
         
-        if (config.entite_fiscale) {
-          tbody.innerHTML = `
+        if (Array.isArray(configs) && configs.length > 0) {
+          tbody.innerHTML = configs.map(config => `
             <tr>
               <td>${config.entite_fiscale}</td>
               <td>${config.antenne}</td>
               <td>${config.banque}</td>
               <td>${config.numero_compte}</td>
-              <td><button class="btn btn-danger btn-sm" onclick="deleteConfig()"><i data-lucide="trash-2"></i></button></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteConfig(${config.id})"><i data-lucide="trash-2"></i></button></td>
             </tr>
-          `;
+          `).join('');
         } else {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Aucune configuration</td></tr>';
         }
@@ -427,14 +427,13 @@
       }
     }
 
-    async function deleteConfig() {
+    async function deleteConfig(id) {
       if (confirm('Supprimer cette configuration?')) {
         try {
-          await fetch(`${API_URL}/api/admin/config`, {
+          await fetch(`${API_URL}/api/admin/config/${id}`, {
             method: 'DELETE',
             headers: getHeaders()
           });
-          await loadConfig();
           await loadConfigsList();
         } catch (err) {
           alert('Erreur: ' + err.message);
