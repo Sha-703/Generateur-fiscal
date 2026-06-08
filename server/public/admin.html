@@ -134,6 +134,13 @@
       }
       return origin;
     })();
+
+    const getHeaders = () => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    function logout() {
       localStorage.removeItem('admin_token');
       window.location.href = 'login-admin.html';
     }
