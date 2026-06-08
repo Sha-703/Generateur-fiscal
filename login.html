@@ -277,6 +277,21 @@
 
         .role-indicator i { width: 16px; height: 16px; color: var(--accent); }
 
+        .live-clock {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-clock strong { color: #f8fafc; }
+
         /* BOUTON DE CONNEXION */
         .btn-login {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -413,6 +428,11 @@
                     <span>Rôle attribué : <strong>Ordonnateur · Exercice Fiscal 2026</strong></span>
                 </div>
 
+                <!-- Horloge locale -->
+                <div class="live-clock">
+                    Heure locale : <strong id="live-time">--:--</strong>
+                </div>
+
                 <!-- Message d'erreur -->
                 <div class="error-message" id="error-msg">
                     <i data-lucide="alert-circle"></i>
@@ -440,13 +460,27 @@
 
         // Horloge en direct
         function updateTime() {
+            const timeEl = document.getElementById('live-time');
+            if (!timeEl) return;
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('live-time').innerText = `${h}:${m}`;
+            timeEl.innerText = `${h}:${m}`;
         }
         updateTime();
         setInterval(updateTime, 30000);
+
+        function getApiUrl() {
+            const origin = window.location.origin || '';
+            const protocol = window.location.protocol || '';
+            if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost')) {
+                return 'http://localhost:3001';
+            }
+            if (origin === 'null' || origin === '' || protocol === 'file:') {
+                return 'https://generateur-fiscal.onrender.com';
+            }
+            return origin;
+        }
 
         // Gestion de la connexion avec API
         async function handleLogin(event) {
@@ -456,7 +490,7 @@
             const errorMsg = document.getElementById('error-msg');
             const btn = document.getElementById('login-btn');
 
-            const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+            const API_URL = getApiUrl();
 
             try {
                 const res = await fetch(`${API_URL}/api/users/login`, {

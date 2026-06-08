@@ -129,8 +129,12 @@
 
     const API_URL = (() => {
       const origin = window.location.origin || '';
-      if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost') || origin.startsWith('file://')) {
+      const protocol = window.location.protocol || '';
+      if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost')) {
         return 'http://localhost:3001';
+      }
+      if (origin === 'null' || origin === '' || protocol === 'file:') {
+        return 'https://generateur-fiscal.onrender.com';
       }
       return origin;
     })();
@@ -182,7 +186,15 @@
           <div class="form-row">
             <div class="form-group">
               <label for="banque">Banque</label>
-              <input type="text" id="banque" placeholder="ex: RAW BANK Matadi" required>
+              <input list="banques" type="text" id="banque" placeholder="ex: RAW BANK Matadi" required>
+              <datalist id="banques">
+                <option value="RAW BANK Matadi">
+                <option value="BCDC">
+                <option value="BIAC">
+                <option value="BGFIBANK">
+                <option value="Banque de Développement du Congo">
+                <option value="URBANK">
+              </datalist>
             </div>
             <div class="form-group">
               <label for="numero_compte">Numéro Compte</label>

@@ -293,16 +293,25 @@
   <script>
     lucide.createIcons();
 
+    function getApiUrl() {
+      const origin = window.location.origin || '';
+      const protocol = window.location.protocol || '';
+      if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost')) {
+        return 'http://localhost:3001';
+      }
+      if (origin === 'null' || origin === '' || protocol === 'file:') {
+        return 'https://generateur-fiscal.onrender.com';
+      }
+      return origin;
+    }
+
     async function handleLogin(event) {
       event.preventDefault();
       const password = document.getElementById('password').value;
       const errorMsg = document.getElementById('error-msg');
       const btn = document.getElementById('login-btn');
 
-      const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
-
-      try {
-        const res = await fetch(`${API_URL}/api/admin/login`, {
+      const API_URL = getApiUrl();
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password })

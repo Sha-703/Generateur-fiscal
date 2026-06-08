@@ -4,8 +4,12 @@
 
 const API_URL = (() => {
     const origin = window.location.origin || '';
-    if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost') || origin.startsWith('file://')) {
+    const protocol = window.location.protocol || '';
+    if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost')) {
         return 'http://localhost:3001';
+    }
+    if (origin === 'null' || origin === '' || protocol === 'file:') {
+        return 'https://generateur-fiscal.onrender.com';
     }
     return origin;
 })();

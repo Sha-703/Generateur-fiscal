@@ -11,8 +11,15 @@ const JWT_SECRET = 'dgrkc-admin-secret-key-2026';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://generateur-fiscal.onrender.com';
 
 // Middleware
+const allowedOrigins = [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'];
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: (origin, callback) => {
+    if (!origin || origin === 'null' || origin.startsWith('file://') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS')); 
+    }
+  },
   credentials: true
 }));
 app.use(bodyParser.json());
