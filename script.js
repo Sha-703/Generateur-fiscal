@@ -28,10 +28,20 @@ async function initializeApp() {
             state.numeroCompte = config.numero_compte;
             state.antenne = config.antenne;
 
-            document.getElementById('input-entite-fiscale').value = config.entite_fiscale;
-            document.getElementById('input-banque').value = config.banque;
-            document.getElementById('input-numero-compte').value = config.numero_compte;
-            document.getElementById('input-antenne').value = config.antenne;
+            const entiteSelect = document.getElementById('input-entite-fiscale');
+            const banqueSelect = document.getElementById('input-banque');
+            const compteSelect = document.getElementById('input-numero-compte');
+            const antenneSelect = document.getElementById('input-antenne');
+
+            entiteSelect.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.entite_fiscale}">${config.entite_fiscale}</option>`;
+            banqueSelect.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.banque}">${config.banque}</option>`;
+            compteSelect.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.numero_compte}">${config.numero_compte}</option>`;
+            antenneSelect.innerHTML = `<option value="">-- Sélectionner --</option><option value="${config.antenne}">${config.antenne}</option>`;
+
+            entiteSelect.value = config.entite_fiscale;
+            banqueSelect.value = config.banque;
+            compteSelect.value = config.numero_compte;
+            antenneSelect.value = config.antenne;
         }
     } catch (err) {
         console.error('Erreur chargement config:', err);

@@ -347,6 +347,7 @@
         if (res.ok) {
           showAlert('config-alert', '✅ Configuration enregistrée!', 'success');
           document.getElementById('config-form').reset();
+          await loadConfig();
         }
       } catch (err) {
         showAlert('config-alert', '❌ Erreur: ' + err.message, 'error');
