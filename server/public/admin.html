@@ -205,6 +205,24 @@
           <button type="submit" class="btn btn-primary btn-block">💾 Enregistrer Configuration</button>
         </form>
       </div>
+
+      <div class="section">
+        <h2>Configuration Actuelle</h2>
+        <table class="table" id="config-table">
+          <thead>
+            <tr>
+              <th>Entité Fiscale</th>
+              <th>Antenne</th>
+              <th>Banque</th>
+              <th>N° Compte</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="config-tbody">
+            <tr><td colspan="5" style="text-align: center; color: #999;">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ========== TAB: UTILISATEURS ========== -->
@@ -360,6 +378,7 @@
           showAlert('config-alert', '✅ Configuration enregistrée!', 'success');
           document.getElementById('config-form').reset();
           await loadConfig();
+          await loadConfigsList();
         }
       } catch (err) {
         showAlert('config-alert', '❌ Erreur: ' + err.message, 'error');
@@ -379,6 +398,47 @@
         }
       } catch (err) {
         console.error('Erreur chargement config:', err);
+      }
+    }
+
+    // Charger la liste des configurations
+    async function loadConfigsList() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/config`);
+        const config = await res.json();
+        const tbody = document.getElementById('config-tbody');
+        
+        if (config.entite_fiscale) {
+          tbody.innerHTML = `
+            <tr>
+              <td>${config.entite_fiscale}</td>
+              <td>${config.antenne}</td>
+              <td>${config.banque}</td>
+              <td>${config.numero_compte}</td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteConfig()"><i data-lucide="trash-2"></i></button></td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Aucune configuration</td></tr>';
+        }
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Erreur chargement liste config:', err);
+      }
+    }
+
+    async function deleteConfig() {
+      if (confirm('Supprimer cette configuration?')) {
+        try {
+          await fetch(`${API_URL}/api/admin/config`, {
+            method: 'DELETE',
+            headers: getHeaders()
+          });
+          await loadConfig();
+          await loadConfigsList();
+        } catch (err) {
+          alert('Erreur: ' + err.message);
+        }
       }
     }
 
@@ -501,6 +561,7 @@
 
     // ========== INITIALISATION ==========
     loadConfig();
+    loadConfigsList();
     loadUsers();
     loadClients();
     lucide.createIcons();

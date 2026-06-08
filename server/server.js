@@ -185,6 +185,15 @@ app.post('/api/admin/config', verifyToken, async (req, res) => {
   }
 });
 
+app.delete('/api/admin/config', verifyToken, async (req, res) => {
+  try {
+    await db.run('DELETE FROM admin_config');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ============ API NUMÉRO AUTO ============
 app.get('/api/numero-next', async (req, res) => {
   try {
