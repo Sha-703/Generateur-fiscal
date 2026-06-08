@@ -559,9 +559,10 @@ textarea:focus {
 .flag-container {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
     margin-top: 0.3rem;
-    text-align: left;
+    text-align: center;
 }
 
 .svg-flag {
@@ -582,6 +583,8 @@ textarea:focus {
     line-height: 1.2;
     color: #000;
     text-transform: uppercase;
+    text-align: center;
+    margin: 0 auto;
 }
 
 .dgrkc-acronym {
@@ -590,6 +593,7 @@ textarea:focus {
     color: var(--dgrkc-red);
     margin-top: -0.1rem;
     letter-spacing: 1px;
+    text-align: center;
 }
 
 .header-right {
