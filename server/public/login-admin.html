@@ -312,6 +312,9 @@
       const btn = document.getElementById('login-btn');
 
       const API_URL = getApiUrl();
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password })
